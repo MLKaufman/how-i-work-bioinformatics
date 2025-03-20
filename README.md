@@ -50,6 +50,8 @@ VS Code <https://code.visualstudio.com/> is used as the primary alternative code
 
 `quarto` <https://quarto.org/> for reproducible analysis. Quarto is a markdown based document format that supports R, Python, and Julia code chunks. It is similar to R Markdown, but is language agnostic.
 
+Paperpile <https://paperpile.com/> is used for managing references and citations. It is a great tool for organizing and citing references in manuscripts.
+
 Aliases and functions: (See `.zshrc` dotfile.)
 
 ## Remote system setup - Alpine HPCC
@@ -145,37 +147,140 @@ A `renv` project is initialized with `renv::init()` to create a project specific
 
 ## Project workflow - scRNAseq
 
-Utilize `quarto` <https://quarto.org/> for reproducible analysis. Quarto is a markdown based document format that supports R, Python, and Julia code chunks. It is similar to R Markdown, but is language agnostic.
-
-Ideally, each analysis step is a separate `quarto` document that is rendered to HTML or PDF. The rendered document is saved in the `analysis` directory.
-01-scRNAseq-raw_qc.qmd | 02-scRNAseq-preprocessing.qmd | 03-scRNAseq-batch_correction.qmd | 04-scRNAseq-clustering_annotation.qmd
-
 ### git workflow
 
 `git init`
 
 Use Rstudio, VS Code, or Github Desktop to manage the git repository.
 
+`.gitignore`
 
-.gitignore
-```bash
-# R
+## R library management 
+I used `rig` to manage the R versions on my local system and switch between them.
 
+I use `renv` to manage R libraries for each project. The general work flow for using `renv` is to initialize a new project with `renv::init()`, snapshot the library with `renv::snapshot()`, and restore the library from a lockfile with `renv::restore()`. The library is saved in the project directory and is not system wide.
+You run these commands from the R console or cli launched R interpreter in the project directory. `renv::init()` creates a `renv` directory in the project directory that contains the library. It also creates a `renv.lock` file that contains the library state. `renv::snapshot()` saves the current library state to the `renv.lock` file. `renv::restore()` restores the library state from the `renv.lock` file. `renv::status()` checks the library state.
+
+![renv](figures/renv.png)
+
+`renv::init()` will also optionally scan the project directory for R scripts and add the packages used in the scripts to the library. This is useful for ensuring that all the packages used in the project are in the library.
+
+I use `pak` as the package manager for `renv`. `pak` is a fast and efficient package manager that is a drop in replacement for `install.packages()`. It is used to install packages in the `renv` library. I create a `.Renviron` file in the project directory that contains the line `RENV_CONFIG_PAK_ENABLED = TRUE` to enable `pak` as the package manager for `renv`.
+
+### Quarto document analysis
+
+Utilize `quarto` <https://quarto.org/> for reproducible analysis. Quarto is a markdown based document format that supports R, Python, and Julia code chunks. It is similar to R Markdown, but is language agnostic.
+
+Ideally, each analysis step is a separate `quarto` document that is rendered to HTML or PDF. The rendered document is saved in the `analysis` directory.  
+`01-scRNAseq-raw_qc.qmd | 02-scRNAseq-preprocessing.qmd | 03-scRNAseq-batch_correction.qmd | 04-scRNAseq-clustering_annotation.qmd`
 
 ### Quarto doc format
 
 Yaml header
 ```yaml
+---
+title: "Analysis: Render"
+subtitle: "Pine/Dinoop - Lung Adenocarcinoma Sox9 OE scRNAseq"
+author:
+  name: "Michael Kaufman, PhD"
+  orcid: 0000-0003-2441-5836
+  email: michael.kaufman@cuanschutz.edu
+  affiliation: 
+    name: "University of Colorado Cancer Center"
+    url: "https://medschool.cuanschutz.edu/colorado-cancer-center"
+abstract:
+  ""
 
+editor: source
+output: html_document
+theme: cosmo
+
+format:
+  html:
+    embed-resources: true
+    self_contained: true
+    code-fold: true
+    code-summary: "[code]"
+    code-overflow: wrap
+    toc: false
+    toc-location: left    
+    grid:
+      sidebar-width: 0px
+      body-width: 1800px
+      margin-width: 100px
+      gutter-width: 10px
+
+execute:
+  warning: false
+  message: false
+  fig.align: "center"
+
+params:
+    ins_path: "raw_data/FASTQs"
+    outs_path: "outs/01-scRNAseq-raw_qc"
+    experiment: "mTC11" # mTC11 or mTC11 Lung or MKRC.2
+    dims: 20
+    mc.cores: 10
+---
 ```
 
-parameters 
-piping 
+### Parameters
+
+How to use parameters in the quarto document.
+
+```r
+```{r}
+print(params$experiment)
+"mTC11"
+```
+```
+
+### Piping workflow and execution 
 
 ### Executing quarto render
+Quarto can be exectued from Rstudio similar to Rmarkdown. However quarto is actually also a command line tool that can be executed from the terminal. This is useful for using within bash script loops or running in parallel.
 
+Simple example:
+
+```bash
+quarto render 01-scRNAseq-raw_qc.qmd --to html --output-dir "outs/01-scRNAseq-raw_qc" --output "01-scRNAseq-raw_qc.html"
+```
+
+Loop expample with passing parameters that override the yaml header:
+```bash
+# render clustering and annotation
+ANALYSIS="06-scRNAseq-tcell_exploration.qmd"
+BASENAME=$(basename "$ANALYSIS" .qmd)
+
+for EXPERIMENT in "mTC11" "mTC11 Lung" "MKRC.2"; do
+    mkdir -p "outs/${BASENAME}"
+    quarto render "$ANALYSIS" --no-clean --to html --output-dir "outs/${BASENAME}" --output "${BASENAME}_${EXPERIMENT}.html" \
+        -P experiment:"${EXPERIMENT}"
+done
+```
+
+### Quarto tricks
+
+ You can embed HTML widgets in the quarto document for interactivity.
+
+ https://quarto.org/docs/interactive/widgets/htmlwidgets.html
+
+https://gallery.htmlwidgets.org/
+
+The major one that I use is the R package `DT` for interactive tables. Can have sorting, searching, filtering, and pagination. Recently I learned that you can add buttons for exporting the table to different formats like CSV.
 
 ## Container integration
 
 The `renv` works well for managing the R library, but does not manage the system dependencies. To manage the system dependencies, I use Docker or Singularity containers.
 The other advantage of using containers is that the analysis is reproducible across different systems and environments, locally or on a cluster like Alpine.
+
+## How I use AI/LLMs in my workflow
+
+- enhanced autocompletion - vscode / Rstudio
+  - free copilot through github education
+- initial README / documentation generation
+- converting code to functions
+    - examples
+- bash scripts
+
+## Things I want to learn, incorporate, or improve
