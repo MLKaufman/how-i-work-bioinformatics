@@ -1,11 +1,13 @@
 # MLK-howiwork-roundrobin scRNAseq project management
+
 Notes and prep for how I manage scRNAseq projects for the BBSR round robin
 
- ## Local system setup - MacOSX Sequioa 15.1 Intel architecture
+## Local system setup - MacOSX Sequioa 15.1 Intel architecture
 
 Homebrew <https://brew.sh/> is used to manage system wide installations of software and packages.
 
 Example of installed software and packages:
+
 ```bash
 ➜  ~ brew list
 ==> Formulae
@@ -54,6 +56,8 @@ Paperpile <https://paperpile.com/> is used for managing references and citations
 
 Aliases and functions: (See `.zshrc` dotfile.)
 
+### Local dotfiles
+
 ## Remote system setup - Alpine HPCC
 
 ```bash
@@ -90,6 +94,9 @@ Aliases and functions: (See `.zshrc` dotfile.)
     └── smb_transfer.sh
 ```
 
+### Remote dotfiles
+
+
 ## Project initiation
 
 Each project starts with a folder locally in my `~/Projects` directory.
@@ -106,7 +113,7 @@ A `renv` project is initialized with `renv::init()` to create a project specific
 
 `renv` workflow is `renv::snapshot()` to save the current library state, `renv::restore()` to restore the library state, and `renv::status()` to check the library state.
 
-## Project organization
+## scRNAseq project organization
 
 ```bash
 ➜  Henry_scRNAseq_Jan2025 tree -L 3
@@ -153,13 +160,28 @@ A `renv` project is initialized with `renv::init()` to create a project specific
 
 Use Rstudio, VS Code, or Github Desktop to manage the git repository.
 
-`.gitignore`
+The typical `.gitignore` file will contain the following:
 
-## R library management 
+```.gitignore
+# .gitignore
+processed_data/
+raw_data/
+
+outs_*
+*.html
+
+.DS_Store
+.Rproj.user
+```
+
+### R library management
+
 I used `rig` to manage the R versions on my local system and switch between them.
 
 I use `renv` to manage R libraries for each project. The general work flow for using `renv` is to initialize a new project with `renv::init()`, snapshot the library with `renv::snapshot()`, and restore the library from a lockfile with `renv::restore()`. The library is saved in the project directory and is not system wide.
 You run these commands from the R console or cli launched R interpreter in the project directory. `renv::init()` creates a `renv` directory in the project directory that contains the library. It also creates a `renv.lock` file that contains the library state. `renv::snapshot()` saves the current library state to the `renv.lock` file. `renv::restore()` restores the library state from the `renv.lock` file. `renv::status()` checks the library state.
+
+`renv` adds a .Rprofile file to the project directory that contains the line `source("renv/activate.R")`. This line is used to activate the local `renv` library when the project is opened in Rstudio, when the individual R scripts/rmd/quarto files are opened, when the R interpreter is launched in the project directory, or when the quarto cli is used to render the quarto documents.
 
 ![renv](figures/renv.png)
 
@@ -177,10 +199,11 @@ Ideally, each analysis step is a separate `quarto` document that is rendered to 
 ### Quarto doc format
 
 Yaml header
+
 ```yaml
 ---
-title: "Analysis: Render"
-subtitle: "Pine/Dinoop - Lung Adenocarcinoma Sox9 OE scRNAseq"
+title: "Analysis: scRNAseq Raw QC"
+subtitle: "Investigator - Project Title"
 author:
   name: "Michael Kaufman, PhD"
   orcid: 0000-0003-2441-5836
@@ -238,15 +261,16 @@ print(params$experiment)
 ### Piping workflow and execution 
 
 ### Executing quarto render
-Quarto can be exectued from Rstudio similar to Rmarkdown. However quarto is actually also a command line tool that can be executed from the terminal. This is useful for using within bash script loops or running in parallel.
+Quarto can be exectued from Rstudio similar to Rmarkdown. However `quarto` is actually also a command line tool that can be executed from the terminal. This is useful for using within bash script loops or running in parallel.
 
-Simple example:
+**Simple example:**
 
 ```bash
 quarto render 01-scRNAseq-raw_qc.qmd --to html --output-dir "outs/01-scRNAseq-raw_qc" --output "01-scRNAseq-raw_qc.html"
 ```
 
-Loop expample with passing parameters that override the yaml header:
+**Loop expample with passing parameters that override the yaml header:**
+
 ```bash
 # render clustering and annotation
 ANALYSIS="06-scRNAseq-tcell_exploration.qmd"
@@ -261,26 +285,138 @@ done
 
 ### Quarto tricks
 
- You can embed HTML widgets in the quarto document for interactivity.
+ You can embed HTML / Javascript widgets in the quarto document for interactivity.
 
  https://quarto.org/docs/interactive/widgets/htmlwidgets.html
 
 https://gallery.htmlwidgets.org/
 
-The major one that I use is the R package `DT` for interactive tables. Can have sorting, searching, filtering, and pagination. Recently I learned that you can add buttons for exporting the table to different formats like CSV.
+The major one that I use is the R package `DT` for interactive tables. Can have sorting, searching, filtering, and pagination. Recently I learned that you can add buttons for exporting the table to different formats like CSV straight from the html document.
 
-## Container integration
+#### Hide anything behind a dropdown
 
-The `renv` works well for managing the R library, but does not manage the system dependencies. To manage the system dependencies, I use Docker or Singularity containers.
-The other advantage of using containers is that the analysis is reproducible across different systems and environments, locally or on a cluster like Alpine.
+```markdown
+<details>
+<summary>Click to expand</summary>
+</details>
+```
+
+### Vscode tricks
+
+#### Plugins
+
+- Apptainer/Singularity
+- BioSyntax
+- ChatGPT
+- Github Copilot
+- Code Spell Checker
+- Dev Containers
+- Docker
+- Markdown All in One
+- Markdown Preview Enhanced
+- markdownlint
+- Nextflow
+- Prettier - Code formatter
+- Quarto
+- R
+- Remote - SSH
+- Remote Explorer
+- Scientific Terms - Code Spell Checker
+- Shiny
+- Snakefmt
+- Snakemake Language
+- indent-rainbow
+- Rainbow CSV
+- themes: Catpuccin Macchiato, Synthwave '84
+
+## Using containers in my workflow
+
+My use case for contaienrs like Docker or Singularity is to isolate specific environments so that they are reproducible or can run anywhere. A minimal container could be something like a a version of a tool captured in a container and run on a system that does not have the tool installed. A more complex container could be a full analysis pipeline that is run on a cluster.Programs that are difficult or impossible to install on the cluster can be run from a container on the cluster.
+
+example usage:
+
+- run a specific version of a tool that is not installed on the system
+- run a cli tool built into container as part of a larger pipeline
+- build enviroment for compiling tools; then copying the tool outside the container for runnning
+- run Rstudio server with pre-installed packages
+- load local folder into container for analysis
+
+### Container `renv` integration example
+
+```dockerfile
+# Start with a base image with R installed
+FROM rocker/verse:latest
+
+# Set a working directory
+WORKDIR /app
+
+# Copy renv.lock and other necessary files into the container
+COPY renv.lock /app/
+COPY .Renviron /app/
+
+# Install renv and pak
+RUN R -e "install.packages('renv', repos = 'https://cloud.r-project.org/')"
+RUN R -e "install.packages('pak', repos = 'https://r-lib.github.io/p/pak/dev/')" \
+        -e "pak::pak_setup()"
+
+# Restore the R environment from renv.lock if it exists
+RUN if [ -f /app/renv.lock ]; then R -e "renv::restore(clean = TRUE)"; fi
+
+
+# Render all .qmd files in the mounted directory
+CMD ["sh", "-c", "quarto render *.qmd --to html --embed-resources"]
+```
+
+On building the container the `renv.lockfile` is copied into the container and the `renv` library is restored. When then container is then run with a command to render all `.qmd` files in the mounted directory.
+
+Building the container: `docker build -t quarto-render .`
+
+Running with: `docker run --rm -v $(pwd):/app quarto-render` will render all `.qmd` files in the current directory using the R environment stored in the container and built with the `renv.lock` file.
+
+## Pro / Cons of the Quarto workflow
+
+### Pros
+
+- reproducible analysis
+- mix languages (R, Python, Julia, Bash) in the same document
+
+### Cons
+
+- additional complexity
+- rendering can be slow
+
+## Supporting tools
+
+### OneDrive
+
+Deliverables for each investigator lives here and is shared with the investigator. In addition to dated folders with the analysis outputs, there is also a powerpoint slide deck for sharing specific results during meetings and taking notes / listing action items during meetings.
+
+I use `rclone` to transfer data directly from Alpine to the OneDrive.
 
 ## How I use AI/LLMs in my workflow
 
+- install github copilot for vscode and rstudio
+  - github education sign in
 - enhanced autocompletion - vscode / Rstudio
   - free copilot through github education
 - initial README / documentation generation
 - converting code to functions
-    - examples
+  - examples
 - bash scripts
+- adding comments to code
 
 ## Things I want to learn, incorporate, or improve
+
+Cell caching in quarto documents to speed up rendering. This is similar to the `cache` option in Rmarkdown. It allows for caching the results of code chunks so that they do not need to be re-run every time the document is rendered. This can significantly speed up rendering time for large documents.
+
+More interactivity in quarto documents. This could include using `htmlwidgets` or `plotly` for interactive plots, or using `shiny` for interactive applications within the quarto document.
+
+Tabs and accordions in quarto documents. This can be useful for organizing content and making it more user-friendly. It allows for collapsing sections of the document to make it easier to navigate.
+
+Dashboards in quarto documents. This could include using `flexdashboard` or `shinydashboard` to create interactive dashboards that display multiple plots and tables in a single document.
+
+`uv` python version manager and pip replacement written in rust that is faster and more efficient than pip. It is similar to `micromamba` for python.
+
+`ObservableJS` - <https://observablehq.com/> is a great platform for interactive data visualization and analysis. It is based on JavaScript and allows for easy sharing and collaboration on data analysis projects. Can be used to create widgets and interactivity in quarto documents. You can have `{ojs}` cells directly in quarto. A more advanced version would be something like `D3.js`.
+
+Rust based tools that can be called from R or Python. There are a number of bioinformatics tools that are being developed in Rust that are faster and more efficient than their R or Python counterparts. Examples include `bio-rs` and `rust-bio`. I would like to write some scRNAseq and cancer related tools that leverage the speed and efficiency of Rust.
