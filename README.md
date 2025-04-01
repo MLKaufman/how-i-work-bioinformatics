@@ -96,6 +96,180 @@ Aliases and functions: (See `.zshrc` dotfile.)
 
 ### Remote dotfiles
 
+```bash
+[mika0001_amc@login-ci2 ~]$ cat .bashrc
+# .bashrc
+
+# Source global definitions
+if [ -f /etc/bashrc ]; then
+        . /etc/bashrc
+fi
+
+#######################
+# EXPORTS
+#######################
+
+# User Paths
+export PATH="/pl/active/bbsrinformatics/analysts/mkaufman/bin:$PATH"
+export PATH=$PATH:/projects/mika0001_amc/bin
+export MAMBA_EXE_CACHE_DIR='/scratch/alpine/mika0001_amc/.cache/micromamba'
+export PIP_CACHE_DIR='/scratch/alpine/mika0001_amc/.cache/pip'
+export NXF_WORK='/scratch/alpine/mika0001_amc/nextflow_work'
+export NXF_TEMP='/scratch/alpine/mika0001_amc/nextflow_temp'
+export RENV_PATHS_CACHE='/scratch/alpine/mika0001_amc'
+export RENV_CONFIG_INSTALL_METHOD="pak"
+export SINGULARITY_TMPDIR='/scratch/alpine/mika0001_amc/'
+export SINGULARITY_CACHEDIR='/scratch/alpine/mika0001_amc/'
+
+
+
+#######################
+# ALIASES
+#######################
+
+# User specific aliases and functions
+alias ls='ls --color=auto'
+alias ld='ls -ltr' # long listing, reverse sort by date
+alias l='ls -l --color=auto' # long listing
+alias ll='ls -l --color=auto' # long listing
+alias la='ls -la --color=auto' # long listing, show hidden files
+alias l.='ls -ld .* --color=auto' # long listing, show hidden files
+alias pipup='pip list --outdated --format=freeze | grep -v '^\-e' | cut -d = -f 1  | xargs -n1 pip install -U' #update pip packages
+alias untar='tar -xvzf'
+alias mm='micromamba'
+alias mma='micromamba activate'
+alias mmd='micromamba deactivate'
+alias mme='micromamba env'
+alias mmel='micromamba env list'
+alias cdp='cd /projects/mika0001_amc'
+alias cds='cd /scratch/alpine/mika0001_amc'
+alias cdh='cd /home/mika0001_amc'
+alias cdb='cd /pl/active/bbsrinformatics/analysts/mkaufman'
+alias cdbd='cd /pl/active/bbsrinformaticsdata'
+alias si='sinteractive'
+alias sq='squeue -u mika0001_amc'
+alias q='squeue -u mika0001_amc'
+alias rb='source ~/.bashrc' # reload bashrc
+alias rmout='rm -rf *.out'
+alias rmerr='rm -rf *.err'
+alias sir='sinteractive --cpus-per-task=1 --mem=4G --time=23:00:00 && module load R && echo "Custom R setup loaded!"'
+
+# RENV
+# Alias for checking the status of the renv project
+alias rstatus='Rscript -e "renv::status()"'
+# Alias for initializing a new renv environment
+alias rinit='Rscript -e "renv::init()"'
+# Alias for restoring the renv environment from the lockfile
+alias rrestore='Rscript -e "renv::restore()"'
+# Alias for snapshotting the current environment to the lockfile
+alias rsnapshot='Rscript -e "renv::snapshot()"'
+# Alias for installing a package in the renv environment
+alias rinstall='Rscript -e "renv::install(commandArgs(trailingOnly = TRUE))"'
+# Alias for removing a package from the renv environment
+alias rremove='Rscript -e "renv::remove(commandArgs(trailingOnly = TRUE))"'
+
+# Singularity
+alias qsing='singularity run /pl/active/bbsrinformatics/analysts/mkaufman/containers/quarto_scrnaseq/quarto_scrnaseq.sif'
+
+#######################
+# FUNCTIONS
+#######################
+
+# QSR - Quarto SLURM Render
+qsr() {
+    if [ $# -lt 1 ]; then
+        echo "Usage: qsr <file.qmd> [<ram_in_gb>] [<cpus>]"
+        return 1
+    fi
+
+    local file="$1"
+    local basename=$(basename "$file" .qmd)
+    local slurm_script="render_${basename}.slurm"
+    local ram=${2:-128G}   # Default RAM is 128G if not provided
+    local cpus=${3:-12}    # Default CPUs is 12 if not provided
+
+    # Create a temporary SLURM script
+    cat > "$slurm_script" <<EOF
+#!/bin/bash
+#SBATCH --job-name=rend_${basename}
+#SBATCH --output=logs/${basename}_render.out
+#SBATCH --error=logs/${basename}_render.err
+#SBATCH --mail-type=END,FAIL       # Notifications for job completion or failure
+#SBATCH --mail-user=mikelkaufman@gmail.com  
+#SBATCH --time=23:00:00
+#SBATCH --mem=${ram}
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=${cpus}
+
+quarto render "$file" --to html
+EOF
+
+    # Submit the SLURM script
+    sbatch "$slurm_script"
+
+    # Copy the SLURM script to the logs folder
+    mkdir -p logs  # Ensure logs directory exists
+    mv "$slurm_script" logs/
+    
+    echo "Submitted rendering job for $file with script $slurm_script"
+    echo "SLURM script moved to logs/${slurm_script}"
+}
+
+# QSSR - Quarto Singularity SLURM Render
+qssr() {
+    if [ $# -lt 1 ]; then
+        echo "Usage: qssr <file.qmd> [<ram_in_gb>] [<cpus>]"
+        return 1
+    fi
+
+    local file="$1"
+    local basename=$(basename "$file" .qmd)
+    local slurm_script="render_${basename}.slurm"
+    local ram=${2:-128G}   # Default RAM is 128G if not provided
+    local cpus=${3:-12}    # Default CPUs is 12 if not provided
+
+    # Create a temporary SLURM script
+    cat > "$slurm_script" <<EOF
+#SBATCH --job-name=rend_${basename}
+#SBATCH --output=logs/${basename}_render.out
+#SBATCH --error=logs/${basename}_render.err
+#SBATCH --mail-type=END,FAIL       # Notifications for job completion or failure
+#SBATCH --mail-user=mikelkaufman@gmail.com  
+#SBATCH --time=23:00:00
+#SBATCH --mem=${ram}
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=${cpus}
+
+singularity run /pl/active/bbsrinformatics/analysts/mkaufman/containers/quarto_scrnaseq/quarto_scrnaseq.sif render "$file" --to html
+EOF
+
+    # Submit the SLURM script
+    sbatch "$slurm_script"
+
+    # Copy the SLURM script to the logs folder
+    mkdir -p logs  # Ensure logs directory exists
+    mv "$slurm_script" logs/
+    
+    echo "Submitted rendering job for $file with script $slurm_script"
+    echo "SLURM script moved to logs/${slurm_script}"
+}
+
+
+####################
+
+# >>> mamba initialize >>>
+# !! Contents within this block are managed by 'micromamba shell init' !!
+export MAMBA_EXE='/pl/active/bbsrinformatics/analysts/mkaufman/bin/micromamba';
+export MAMBA_ROOT_PREFIX='/pl/active/bbsrinformatics/analysts/mkaufman/micromamba';
+__mamba_setup="$("$MAMBA_EXE" shell hook --shell bash --root-prefix "$MAMBA_ROOT_PREFIX" 2> /dev/null)"
+if [ $? -eq 0 ]; then
+    eval "$__mamba_setup"
+else
+    alias micromamba="$MAMBA_EXE"  # Fallback on help from micromamba activate
+fi
+unset __mamba_setup
+# <<< mamba initialize <<<
+```
 
 ## Project initiation
 
