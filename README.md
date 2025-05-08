@@ -287,6 +287,32 @@ A `renv` project is initialized with `renv::init()` to create a project specific
 
 `renv` workflow is `renv::snapshot()` to save the current library state, `renv::restore()` to restore the library state, and `renv::status()` to check the library state.
 
+## General project management
+
+### Project organization
+
+Every analysis project has:
+
+- Git repository for version control of pipelines and analysis workflows
+  - minimally contains a `README.md` file and folder structure similar to the one below
+  - synced to Github `UCCC-BBSR-projects` organization
+  - working copies exist on the local system and on the remote cluster
+- a OneDrive folder for deliverables and notes
+  - this is a folder shared with the investigator
+  - contains a dated folder for the analysis outputs
+  - contains a PowerPoint slide deck for sharing specific results during meetings and taking notes / listing action items during meetings
+- a BBSR Notion entry for the project
+
+### Time tracking
+
+I am currently experimenting with using `Toggl` <https://toggl.com/> for time tracking. The free version is sufficient for my needs. I have a project for each investigator and a task for each project. I can track time spent on each project and task. I can also add notes to each time entry.
+It includes a Pomodoro timer and a calendar view of the time entries. It has an extension for Chrome and a mobile app. 
+
+### Meeting scheduling
+
+I use `Calendly` <https://calendly.com/> to schedule meetings with investigators. It is a great tool for scheduling meetings without the back and forth of email. I can set my availability and investigators can book time with me. It integrates with Google Calendar, Outlook, and Zoom. When someone uses it to scedule a meeting with me Calendly auto books the meeting, adds it to my calender, and sends a calendar invite and zoom link to the investigator. You have full control over the time slots, how soon or far away they can book, and it checks the availability based on your calendars.
+My personal link is <https://calendly.com/mlkaufman/virtual-meeting>
+
 ## scRNAseq project organization
 
 ```bash
@@ -580,6 +606,9 @@ I use `rclone` to transfer data directly from Alpine to the OneDrive.
 - adding comments to code
 
 ## Things I want to learn, incorporate, or improve
+
+There are a whole bunch of quarto extensions and features that I would like to learn more about and incorporate into my workflow.
+<https://quarto.org/docs/extensions/>
 
 Cell caching in quarto documents to speed up rendering. This is similar to the `cache` option in Rmarkdown. It allows for caching the results of code chunks so that they do not need to be re-run every time the document is rendered. This can significantly speed up rendering time for large documents.
 
