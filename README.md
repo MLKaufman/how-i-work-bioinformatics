@@ -54,6 +54,10 @@ VS Code <https://code.visualstudio.com/> is used as the primary alternative code
 
 Paperpile <https://paperpile.com/> is used for managing references and citations. It is a great tool for organizing and citing references in manuscripts.
 
+`zsh-you-should-use` - brew installed. This plugin is familiar with all of your aliases and will remind you when you forget to use them. For example is you typed `git status` but you have an alias `gst` that does the same thing, the plugin will remind you to use the alias instead. It is a great way to remember your aliases and use them consistently.
+
+`mcfly` - McFly replaces your default ctrl-r shell history search with an intelligent search engine that takes into account your working directory and the context of recently executed commands. McFly's suggestions are prioritized in real time with a small neural network.
+
 Aliases and functions: (See `.zshrc` dotfile.)
 
 ### Local dotfiles
@@ -389,6 +393,8 @@ You run these commands from the R console or cli launched R interpreter in the p
 
 I use `pak` as the package manager for `renv`. `pak` is a fast and efficient package manager that is a drop in replacement for `install.packages()`. It is used to install packages in the `renv` library. I create a `.Renviron` file in the project directory that contains the line `RENV_CONFIG_PAK_ENABLED = TRUE` to enable `pak` as the package manager for `renv`.
 
+Note: I might actually phase out using `pak` and stick with using `renv::install()` for installing packages to ensure better reproducbility when rebuilding from the lockfile. Aslo setting `options(repos = BiocManager::repositories())` helps Bioconductor packages to be installed from the correct repository.
+
 ### Quarto document analysis
 
 Utilize `quarto` <https://quarto.org/> for reproducible analysis. Quarto is a markdown based document format that supports R, Python, and Julia code chunks. It is similar to R Markdown, but is language agnostic.
@@ -623,3 +629,7 @@ Dashboards in quarto documents. This could include using `flexdashboard` or `shi
 `ObservableJS` - <https://observablehq.com/> is a great platform for interactive data visualization and analysis. It is based on JavaScript and allows for easy sharing and collaboration on data analysis projects. Can be used to create widgets and interactivity in quarto documents. You can have `{ojs}` cells directly in quarto. A more advanced version would be something like `D3.js`.
 
 Rust based tools that can be called from R or Python. There are a number of bioinformatics tools that are being developed in Rust that are faster and more efficient than their R or Python counterparts. Examples include `bio-rs` and `rust-bio`. I would like to write some scRNAseq and cancer related tools that leverage the speed and efficiency of Rust.
+
+`Marimo` - This is a notebook based analysis tool that is similar to Jupyter notebooks. Unlike jupyter notebooks, cells are reactive/can update in realtime. Also the notebooks work with git control and version management which is not possible/messy with vanilla jupyter notebooks.
+
+`positron` - This is a new R IDE that is being developed by Posit. It is similar to Rstudio but based on VSCODE. I keep trying it and wanting to like it but I feel it doesnt quite fill the gap beterrn Rstudio and VScode yet. I think it has a lot of potential and I will keep an eye on it. It is still in beta and is being actively developed. It is worth checking out if you are a R user and like VScode.
