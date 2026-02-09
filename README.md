@@ -1,6 +1,13 @@
 # MLK-howiwork-roundrobin scRNAseq project management
 
-Notes and prep for how I manage scRNAseq projects for the BBSR round robin
+Notes on how I work bioinformatically.
+
+## New Project setup
+
+Every new project gets:
+- a git repo
+- a OneDrive folder for deliverables
+- a BBSR Notion entry
 
 ## Local system setup - MacOSX Sequioa 15.1 Intel architecture
 
@@ -633,3 +640,17 @@ Rust based tools that can be called from R or Python. There are a number of bioi
 `Marimo` - This is a notebook based analysis tool that is similar to Jupyter notebooks. Unlike jupyter notebooks, cells are reactive/can update in realtime. Also the notebooks work with git control and version management which is not possible/messy with vanilla jupyter notebooks.
 
 `positron` - This is a new R IDE that is being developed by Posit. It is similar to Rstudio but based on VSCODE. I keep trying it and wanting to like it but I feel it doesnt quite fill the gap beterrn Rstudio and VScode yet. I think it has a lot of potential and I will keep an eye on it. It is still in beta and is being actively developed. It is worth checking out if you are a R user and like VScode.
+
+## How I keep up to date with new tools and techniques
+- Hackers News <https://news.ycombinator.com/>
+- Lobsters <https://lobste.rs/>
+- BioStars <https://www.biostars.org/>
+- SeqAnswers <http://seqanswers.com/>
+- r-bloggers <https://www.r-bloggers.com/>
+- PlanetPython <https://planetpython.org/>
+
+Podcasts:
+- Data Framed
+- Nature
+- Talk Python to Me
+- Python Bytes
