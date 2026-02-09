@@ -1,0 +1,50 @@
+## Reproducibility
+
+### Code document - `quarto`
+
+The code in quarto document format is included below which can be used to render and rerun this analysis workflow in its entirety. It can be rendered with the `quarto` publishing system running in the R programming environment in the `renv` section. You can download the file using the button below.
+
+```{r qmd-download}
+#| echo: false
+#| results: "asis"
+
+qmd_embed_download()
+
+```
+
+### R programming environment - `renv`
+
+This project uses `renv` to manage package dependencies. `renv` is an R package that helps create and manage project-specific environments, ensuring that the correct versions of packages are used for reproducibility. To restore the environment, you would typically run `renv::restore()` in your R session, which will install the packages specified in the `renv.lock` file.
+You can download the `renv.lock` file below to restore the environment.
+
+```{r renv-download}
+#| echo: false
+#| results: "asis"
+
+renv_embed_download()
+
+```
+
+The current status of the environment is as follows:
+
+```{r, renv-status}
+renv::status()
+```
+
+### Session info
+
+```{r session-info}
+sessionInfo()
+```
+
+---
+
+```{r render-time}
+#| echo: false
+#| results: "asis"
+end_time <- Sys.time()
+render_duration <- end_time - start_time
+
+cat("Document render completed at:", format(end_time, "%Y-%m-%d %H:%M:%S"), "\n\n")
+cat("Total render time:", round(as.numeric(render_duration, units = "mins"), 2), "minutes\n")
+```
