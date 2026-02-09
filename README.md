@@ -1,4 +1,4 @@
-# MLK-howiwork-roundrobin scRNAseq project management
+# how-i-work-bioinformatically
 
 Notes on how I work bioinformatically.
 
